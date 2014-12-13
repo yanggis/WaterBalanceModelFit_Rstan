@@ -20,6 +20,7 @@ data {
   real<lower=0> chi_theta[2];	// mixing proporiton of chi distrib	
   real 					PETlim; 			// max PET, limits ETo and other vars
 }
+
 transformed data{
 	real			Xmax; 						// max x value
 	real 			Ymax;

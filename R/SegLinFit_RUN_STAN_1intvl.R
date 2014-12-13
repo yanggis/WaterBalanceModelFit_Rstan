@@ -37,12 +37,13 @@ GoStanGo <- function(segfit,pars,ixWS,niter=1000,saveTF=T,saveSubDir=NULL){
 	Data 				<- GetData(ixWS=ixWS,dataType=dataType,tType=tType,tWindow=tWindow,TcpYr=TcpYr,ixPtype=ixPtype) # input data
 	ParamUncert <- ParamUncertSettings(PET=Data$PET)
 	tParams 		<- tParamSettings(tType)
-	XdataMix 		<- MixNorm_Estimate(K=2,d=Data$Pall,plotTF=F) 	# gauss mix estimate of source data
+	XdataMix 		<- MixNorm_Estimate(K=2, d=Data$Pall, plotTF=F) 	# gauss mix estimate of source data
 	Dstan 			<- StanData(intvlType, Data$Data, XdataMix, ParamUncert)
-	Init 				<- initFcn(Dstan,ParamUncert,intvlType,chains)
+	Init 				<- initFcn(Dstan, ParamUncert, intvlType, chains)
 	
 	# RUN STAN
-	StanOut1 <- RunStan(segfit=segfit,pars=pars,init=Init,chains=chains,Dstan=Dstan,parTF=parTF,niter=niter)
+	StanOut1 <- RunStan(segfit=segfit, pars=pars, init=Init, chains=chains, 
+											Dstan=Dstan, parTF=parTF, niter=niter)
 	
 	dir.save <- Data$dirData
 	if (!is.null(saveSubDir)){
