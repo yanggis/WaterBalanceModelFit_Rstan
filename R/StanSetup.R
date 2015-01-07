@@ -6,13 +6,13 @@ ParamUncertSettings <- function(PET) {
 	sdX 		<- c(10, 0, 0.1) 			# [minSD,minCoef,maxCoef]
 	sdY 		<- c(0.1, 0, 0.1)			# [minSD,minCoef,maxCoef] - minSD = 0 for yobs
 	sdI			<- c(25, 500) 				# [min, max] intrinsic uncert stddev
-	S2_lims <- c(0.5, 1.1) 			# (minS2, maxS2)
+	S2_lims <- c(0.6, 1.1) 				# (minS2, maxS2)
 	PETlim 	<- 1.0*PET 						# PET estimate from CIMIS ETo product
 	ParamUncert <- list(sdX=sdX, sdY=sdY, sdI=sdI, S2_lims=S2_lims, PETlim=PETlim)
 }
 
 StanInit <- function(stanFile) {
-	standir  <- '~/Documents/CODE/R/RSTAN_SegLinFit/RSTAN/'
+	standir  <- '~/Documents/CODE/R/WaterBalanceModelFit_Rstan/RStan/'
 	stanPath <- paste(standir, stanFile, sep='')
 	stanfit  <- stan(file=stanPath ,chains=0)
 }
@@ -20,7 +20,10 @@ StanInit <- function(stanFile) {
 InitStan <- function(intvlType) {
 	# INITIALIZE STAN MODELS
 	if (intvlType=='1'){ 	# single interval 	
-		stanFile <- 'SegLinFit14_1e.stan'
+		# stanFile <- 'SegLinFit14_1e.stan'
+		stanFile <- 'SegLinFit14_1e_k1_0.stan'
+		if (etiTF)
+			stanFile <- 'SegLinFit14_1e_k1_0_aPx.stan'
 		if (!exists('segfit')) {					# only re-compile stan file if not already done
 			segfit <- StanInit(stanFile) 
 			cat('IGNORE THIS ERROR')
@@ -69,6 +72,9 @@ StanData <- function(intvlType, PRdata, XdataMix, ParamUncert, cpParams=F, Tcp=F
 							chi_theta=XdataMix$MixTheta,
 							PETlim = PETlim)
 	}
+	if (etiTF)
+		D$ETi <- PRdata$ETi
+	
 	# MUST UPDATE 2 INTVL REGRESSION TO MATCH 1 INTVL VERSION!!!
 # 	if (intvlType == '2'){ 
 # 		D <- list(N=N, xobs=xobs, yobs=yobs, ox=sdX, oy=sdY, s2lim=s2lims, oI=sdI, 
@@ -96,8 +102,13 @@ initList <- function(xobs, yobs, s2lim1, pet=3000, parInfo) {
 	ay  <- parInfo$sdY[3]/2
 	A   <- 5 		# inv logistic fcn shape param (as applicable)
 	
-	list(S2=S2, K1=k1, dK=dk, ETo=eto, nu=yobs, chi=xobs,
-			 sdI=sdI, ax=ax, ay=ay, A=5 )
+	initList <- list(S2=S2, K1=k1, dK=dk, ETo=eto, nu=yobs, chi=xobs,
+			 						 sdI=sdI, ax=ax, ay=ay, A=5 )
+	
+	if (etiTF) {
+		initList$c <- 1	
+	}
+	return(initList)
 }
 
 initFcn <- function(Dstan, ParamUncert, intvlType, chains) {
@@ -105,7 +116,7 @@ initFcn <- function(Dstan, ParamUncert, intvlType, chains) {
 	yobs <- Dstan$yobs
 	pet  <- Dstan$PETlim
 	s2lim1 <- Dstan$s2lim[1]
-	if (intvlType=='1'){
+	if (intvlType=='1') {
 		init <- lapply(1:chains, 
 									 function(id) initList(xobs, yobs, s2lim1, pet, ParamUncert)
 									 )
@@ -114,4 +125,3 @@ initFcn <- function(Dstan, ParamUncert, intvlType, chains) {
 	}
 	return(init)
 }
-

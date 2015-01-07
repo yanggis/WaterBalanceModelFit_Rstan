@@ -34,34 +34,14 @@ StanIterate <- function(segfit, init, chains, Dstan, parTF, niter) {
 		rr <- rr + 1
 		rhatChk <- checkRhat(summary(SegFit)$summary)
 	}	
-# 	PD 	<- extract(SegFit, permuted=T)
-# 	S 	<- summary(SegFit, probs=c(0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975))$summary
-	
-	# PRINT POSTERIOR SUMMARIES
-# 	print(SegFit, digits_summary=3, pars=pars)
 	return(SegFit)
 }
 
 StanRun <- function(segfit, PRdata, ParamUncert, PdataGMix, fit.pars, niter=1000, chains=2, parTF=F) {
 	# PARAMETERS
-# 	tWindow 		<- c(1,22) 				# [first,last]  either idx or yrs
-# 	tType  			<- 'All' 					# ['All','WindowTcp','WindowYrs','WindowIdx']
-# 	TcpYr 			<- 1978 					# first year of changed behavior
-# 	dataType 		<- 'obsv' 				# ['obsv','synth']
-# 	ixPtype 		<- 1							# Ptypes <- c('VICs','PRISM','VIC','GHCN')
-# 	plotTF  		<- T
-# 	parTF 			<- T
 	if (parTF)
 		chains=1
 	
-	# CALC DATA AND PROVIDE AS INPUT
-	# Data 				<- GetData(ixWS=ixWS,dataType=dataType,tType=tType,tWindow=tWindow,TcpYr=TcpYr,ixPtype=ixPtype) # input data
-	# PROVIDE PARAM SETTINGS AS INPUT
-	# ParamUncert <- ParamUncertSettings(PET=Data$PET)
-	# NOT USED
-	# tParams 		<- tParamSettings(tType)
-	# PROVIDE XDATAMIX AS INPUT
-	# XdataMix 		<- MixNorm_Estimate(K=2, d=Data$Pall, plotTF=F) 	# gauss mix estimate of source data
 	Dstan <- StanData(intvlType, PRdata, PdataGMix, ParamUncert)
 	Init 	<- initFcn(Dstan, ParamUncert, intvlType, chains)
 	
@@ -73,28 +53,5 @@ StanRun <- function(segfit, PRdata, ParamUncert, PdataGMix, fit.pars, niter=1000
 	print(SegFit, digits_summary=3, pars=fit.pars)
 	
 	return(list(SegFit=SegFit, Dstan=Dstan))
-# 	dir.save <- Data$dirData
-# 	if (!is.null(saveSubDir)){
-# 		dir.save <- file.path(dir.save,saveSubDir)
-# 		dir.create(dir.save, showWarnings = FALSE)
-# 	}
-# 	
-# 	if (plotTF){
-# 		PlotRvP(intvlType,Dstan,StanOut1$PD,StanOut1$S,ixWS,dir.save)
-# 		# traceplot(SegFit,pars=pars)
-# 	}
-# 	
-# 	# SAVE DATA
-# 	if (saveTF){
-# 		# SUMMARY TABLE
-# 		fname <- file.path(dir.save,'RSTAN_1IntvlFitSummary.RData')
-# 		S <- StanOut1$S
-# 		save(list=c('S'),file=fname)
-# 		
-# 		# MODEL, POSTERIORS, PARAMETERS
-# 		fname <- file.path(dir.save,'RSTAN_1IntvlFitData.RData')
-# 		save(list=c('StanOut1','segfit','ParamUncert','tParams','XdataMix','Dstan','Init'),file=fname)
-# 	}
-# 	return(list(StanOut1=StanOut1,Data=Data,Dstan=Dstan,XdataMix=XdataMix))
 }
 
